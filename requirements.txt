@@ -1,3 +1,6 @@
 flask
 flask_cors
+typing
+dataclasses
+enum
 gunicorn
