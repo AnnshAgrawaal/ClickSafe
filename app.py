@@ -1,5 +1,6 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
+import os
 import re
 import urllib.parse
 from typing import Dict, List, Tuple
@@ -271,6 +272,10 @@ def get_stats():
             'Trusted domain whitelist'
         ]
     })
+
+@app.route('/')
+def serve_index():
+    return send_from_directory(os.path.dirname(os.path.abspath(__file__)), 'index.html')
 
 if __name__ == '__main__':
     print("🚀 Starting LinkGuard API server...")
