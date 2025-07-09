@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClickSafe - URL Safety Detector</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-blue': '#1e40af',
+                        'safe-green': '#10b981',
+                        'warning-yellow': '#f59e0b',
+                        'danger-red': '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-bold text-slate-800 mb-2">
+                🔗 <span class="text-brand-blue">ClickSafe</span>
+            </h1>
+            <p class="text-slate-600 text-lg">Check if a link is safe before you click</p>
+        </div>
+
+        <!-- Main Input Card -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <div class="flex flex-col space-y-4">
+                <label for="urlInput" class="text-sm font-medium text-slate-700">
+                    Enter URL to analyze:
+                </label>
+                <div class="flex gap-3">
+                    <input 
+                        type="url" 
+                        id="urlInput" 
+                        placeholder="https://example.com or paste any link here..."
+                        class="flex-1 px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent outline-none transition-all"
+                    >
+                    <button 
+                        onclick="analyzeLink()" 
+                        class="px-6 py-3 bg-brand-blue text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
+                    >
+                        <span>🔍</span>
+                        Analyze
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="hidden bg-white rounded-xl shadow-lg p-8 text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-blue mx-auto mb-4"></div>
+            <p class="text-slate-600">Analyzing link safety...</p>
+        </div>
+
+        <!-- Results Card -->
+        <div id="resultsCard" class="hidden bg-white rounded-xl shadow-lg overflow-hidden">
+            <!-- Risk Level Header -->
+            <div id="riskHeader" class="px-6 py-4 text-white font-medium">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <span id="riskIcon" class="text-2xl"></span>
+                        <div>
+                            <h3 class="text-lg font-semibold">Risk Assessment</h3>
+                            <p id="riskLevel" class="text-sm opacity-90"></p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-bold" id="confidenceScore"></div>
+                        <div class="text-sm opacity-90">Confidence</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- URL Display -->
+            <div class="px-6 py-4 bg-slate-50 border-b">
+                <p class="text-sm text-slate-600 mb-1">Analyzed URL:</p>
+                <p id="analyzedUrl" class="font-mono text-slate-800 break-all bg-white px-3 py-2 rounded border"></p>
+            </div>
+
+            <!-- Details Section -->
+            <div class="px-6 py-6">
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- Reasons -->
+                    <div>
+                        <h4 class="font-semibold text-slate-800 mb-3 flex items-center gap-2">
+                            <span>📋</span>
+                            Detection Results
+                        </h4>
+                        <div id="reasonsList" class="space-y-2"></div>
+                    </div>
+
+                    <!-- Suggestions -->
+                    <div>
+                        <h4 class="font-semibold text-slate-800 mb-3 flex items-center gap-2">
+                            <span>💡</span>
+                            Recommendations
+                        </h4>
+                        <div id="suggestionsList" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Example Links -->
+        <div class="mt-8 bg-white rounded-xl shadow-lg p-6">
+            <h3 class="font-semibold text-slate-800 mb-4">Try these examples:</h3>
+            <div class="grid md:grid-cols-2 gap-3">
+                <button onclick="testUrl('https://google.com')" class="text-left p-3 bg-green-50 hover:bg-green-100 rounded-lg border border-green-200 transition-colors">
+                    <div class="font-medium text-green-800">✅ Safe Example</div>
+                    <div class="text-sm text-green-600">https://google.com</div>
+                </button>
+                <button onclick="testUrl('https://paypal-secure-update.tk/verify')" class="text-left p-3 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 transition-colors">
+                    <div class="font-medium text-red-800">🚨 Suspicious Example</div>
+                    <div class="text-sm text-red-600">https://paypal-secure-update.tk/verify</div>
+                </button>
+                <button onclick="testUrl('https://bit.ly/3x8d9f2')" class="text-left p-3 bg-yellow-50 hover:bg-yellow-100 rounded-lg border border-yellow-200 transition-colors">
+                    <div class="font-medium text-yellow-800">⚠️ URL Shortener</div>
+                    <div class="text-sm text-yellow-600">https://bit.ly/3x8d9f2</div>
+                </button>
+                <button onclick="testUrl('http://192.168.1.1/login')" class="text-left p-3 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 transition-colors">
+                    <div class="font-medium text-red-800">🚨 IP Address</div>
+                    <div class="text-sm text-red-600">http://192.168.1.1/login</div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE_URL = 'http://localhost:5000/api';
+
+        async function analyzeLink() {
+            const url = document.getElementById('urlInput').value.trim();
+            if (!url) {
+                alert('Please enter a URL to analyze');
+                return;
+            }
+
+            // Show loading state
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('resultsCard').classList.add('hidden');
+
+            try {
+                // Call Python backend API
+                const response = await fetch(`${API_BASE_URL}/analyze`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: url })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayResults(data.data);
+                } else {
+                    displayError(data.message || 'Analysis failed');
+                }
+                
+            } catch (error) {
+                console.error('API Error:', error);
+                displayError('Unable to connect to analysis service. Please try again.');
+            } finally {
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('resultsCard').classList.remove('hidden');
+            }
+        }
+
+        function displayError(message) {
+            // Display error in results card
+            const result = {
+                url: document.getElementById('urlInput').value,
+                risk_level: 'suspicious',
+                confidence: 0.5,
+                reasons: ['Analysis service unavailable'],
+                suggestions: [message]
+            };
+            displayResults(result);
+        }
+
+        function displayResults(result) {
+            // Update analyzed URL
+            document.getElementById('analyzedUrl').textContent = result.url;
+
+            // Update risk header
+            const riskHeader = document.getElementById('riskHeader');
+            const riskIcon = document.getElementById('riskIcon');
+            const riskLevel = document.getElementById('riskLevel');
+            const confidenceScore = document.getElementById('confidenceScore');
+
+            confidenceScore.textContent = Math.round(result.confidence * 100) + '%';
+
+            if (result.risk_level === 'safe') {
+                riskHeader.className = 'px-6 py-4 bg-safe-green text-white font-medium';
+                riskIcon.textContent = '✅';
+                riskLevel.textContent = 'SAFE TO VISIT';
+            } else if (result.risk_level === 'suspicious') {
+                riskHeader.className = 'px-6 py-4 bg-warning-yellow text-white font-medium';
+                riskIcon.textContent = '⚠️';
+                riskLevel.textContent = 'POTENTIALLY SUSPICIOUS';
+            } else {
+                riskHeader.className = 'px-6 py-4 bg-danger-red text-white font-medium';
+                riskIcon.textContent = '🚨';
+                riskLevel.textContent = 'DANGEROUS - AVOID';
+            }
+
+            // Update reasons
+            const reasonsList = document.getElementById('reasonsList');
+            reasonsList.innerHTML = '';
+            result.reasons.forEach(reason => {
+                const reasonItem = document.createElement('div');
+                reasonItem.className = 'p-3 bg-slate-50 rounded-lg border-l-4 border-slate-400';
+                reasonItem.innerHTML = `<p class="text-sm text-slate-700">${reason}</p>`;
+                reasonsList.appendChild(reasonItem);
+            });
+
+            // Update suggestions
+            const suggestionsList = document.getElementById('suggestionsList');
+            suggestionsList.innerHTML = '';
+            result.suggestions.forEach(suggestion => {
+                const suggestionItem = document.createElement('div');
+                suggestionItem.className = 'p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400';
+                suggestionItem.innerHTML = `<p class="text-sm text-blue-700">${suggestion}</p>`;
+                suggestionsList.appendChild(suggestionItem);
+            });
+        }
+
+        function testUrl(url) {
+            document.getElementById('urlInput').value = url;
+            analyzeLink();
+        }
+
+        // Allow Enter key to submit
+        document.getElementById('urlInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                analyzeLink();
+            }
+        });
+    </script>
+</body>
+</html>
